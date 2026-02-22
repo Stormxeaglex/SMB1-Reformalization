@@ -45,7 +45,7 @@ JOYPAD_PORT           = $4016                                                   
 JOYPAD_PORT1          = $4016                                                                                            // 
 JOYPAD_PORT2          = $4017                                                                                            // 
                                                                                                                          // 
-; GAME SPECIFIC DEFINES                                                                                                  // 
+; GAME SPECIFIC DEFINES                                                                                                  // )
                                                                                                                          // 
 ObjectOffset          = $08                                                                                              // 
                                                                                                                          // 
@@ -1175,11 +1175,11 @@ ExitVWalk:   lda VictoryWalkControl  ;load value set here                       
                                                                                                                          // 
 ;-------------------------------------------------------------------------------------                                   // 
                                                                                                                          // 
-PrintVictoryMessages:                                                                                                    // 
-               lda SecondaryMsgCounter   ;load secondary message counter                                                 // 
-               bne IncMsgCounter         ;if set, branch to increment message counters                                   // 
-               lda PrimaryMsgCounter     ;otherwise load primary message counter                                         // 
-               beq ThankPlayer           ;if set to zero, branch to print first message                                  // 
+PrintVictoryMessages:                                                                                                    // void PrintVictoryMessages() { //Probably should change this to a label
+               lda SecondaryMsgCounter   ;load secondary message counter                                                 //   {
+               bne IncMsgCounter         ;if set, branch to increment message counters                                   //   if (SecondaryMsgCounter == 0) {
+               lda PrimaryMsgCounter     ;otherwise load primary message counter                                         //     if (PrimaryMsgCounter != 0) {       
+               beq ThankPlayer           ;if set to zero, branch to print first message                                  //           
                cmp #$09                  ;if at 9 or above, branch elsewhere (this comparison                            // 
                bcs IncMsgCounter         ;is residual code, counter never reaches 9)                                     // 
                ldy WorldNumber           ;check world number                                                             // 
