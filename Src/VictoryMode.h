@@ -1,3 +1,11 @@
+enum VictoryModeSubroutinesOptions {
+    BridgeCollapse,
+    SetupVictoryMode,
+    PlayerVictoryWalk,
+    PrintVictoryMessages,
+    PlayerEndWorld          
+}
+
 typedef enum {
     INITIALISE = 0,
     
