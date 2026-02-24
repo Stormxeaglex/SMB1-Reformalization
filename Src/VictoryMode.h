@@ -1,10 +1,10 @@
-enum VictoryModeSubroutinesOptions {
+enum VictoryModeOperationStates {
     BridgeCollapse,
     SetupVictoryMode,
     PlayerVictoryWalk,
     PrintVictoryMessages,
     PlayerEndWorld          
-}
+};
 
 typedef enum {
     INITIALISE = 0,
@@ -24,4 +24,4 @@ typedef enum {
     W8_EXIT_MSG = 7,
     
     UNUSED_STATE9 = 9
-} MsgStates
+} MsgStates;
