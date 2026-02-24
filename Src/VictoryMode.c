@@ -1,16 +1,11 @@
 #include "VictoryMode.h"
-
+#define P1_PRESSING(button) ((SavedJoypadP1Bits & button) == button)
+#define P2_PRESSING(button) ((SavedJoypadP2Bits & button) == button)
 extern uint8_t rCarry;
 extern void ScrollScreen(register uint8_t) {}
 extern void UpdScrollVar(void) {}
 
-enum VictoryModeSubroutinesOptions {
-    BridgeCollapse,
-    SetupVictoryMode,
-    PlayerVictoryWalk,
-    PrintVictoryMessages,
-    PlayerEndWorld          
-}
+
 
 void VictoryModeSubroutines(void) {
     switch (OperMode_Task) {
@@ -27,13 +22,14 @@ void VictoryModeSubroutines(void) {
         OperMode_Task++
         return;
         
-    do_PlayerVictoryWalk:
-        //--Check when we should stop player autowalk--
+    do_PlayerVictoryWalk: 
+    {
+        //  --Check when we should stop player autowalk--
         gVictoryWalkControl = 
             ((Player_PageLoc != DestinationPageLoc) || (Player_X_Position < 60));
         AutoControlPlayer(gVictoryWalkControl);
         
-        //--Handle Auto Scrolling--
+        //              --Handle Auto Scrolling--
         if (ScreenLeft_PageLoc != DestinationPageLoc) {
             {
                 gScrollFractional += 0x80; bool rCarry = (gScrollFraction < 0x80);
@@ -43,55 +39,50 @@ void VictoryModeSubroutines(void) {
             gVictoryWalkControl += 1; //Asm weirdness to keep this true
         }
         
-        //--Check if we should enter the next victory mode state after autowalk completes--
+        // --Check if we should enter the next victory mode state-- 
+        //              --after autowalk completes--
         if (gVictoryWalkControl == 0) {
             OperMode_Task++;
         }
         return;
+    }
 
     do_PrintVictoryMessages:
+    {
         // --Handle Logic For Waiting For The Next Valid State--
         if (gTimerUntilNextMsgState > 0 || gSavedMsgState >= UNUSED_STATE9) goto WaitUntilNextState;
-        // PrimaryMsgCounter != 0 case (else part of the original beq)
         if (gSavedMsgState > INITIALIZE) {
             if (WorldNumber == World8) {
                 if (gSavedMsgState < PRINCESS_MSG_1) 
                     goto WaitUntilNextState;
             } else {
-                // MRetainerMsg (world 1‑7)
                 if (gSavedMsgState < ANOTHER_CASTLE) 
                     goto WaitUntilNextState;
-                //Note the SBC instruction is useless, and its removed from the C
-                //the later iny and dey instructions also always cancel out
             }
-            // fall through to ThankPlayer
         }
-        //ThankPlayer
-        // --Handle Execute Message State Logic--
+        
+        //      --Handle Execute Message State Logic--
         register MsgStates WorkingMsgState = gSavedMsgState
         if (WorkingMsgState == INITIALIZE) {     // Thank you mario or Thank you luigi message
             WorkingMsgState = (gCurrentPlayer==LUIGI) ? THANK_LUIGI : THANK_MARIO // Luigi uses message 1 
         } else {                          // After thanking, select world 8 or princess in another castle messages
             if (WorldNumber == World8) {
-                // EvalForMusic
-                if (WorkingMsgState == W8_PLAY_PRINCESS_MUSIC) {
-                    EventMusicQueue = VictoryMusic;
-                }
+                if (WorkingMsgState == W8_PLAY_PRINCESS_MUSIC) 
+                    EventMusicQueue = VictoryMusic; // EvalForMusic
             } else {
-                if (WorkintMsgState == W1–7_END_DELAY) {
+                if (WorkingMsgState == W1–7_END_DELAY) 
                     goto WaitUntilNextState;
-                } else if  (WorkingMsgState >= W1–7_EXIT_MSG) {
+                else if (WorkingMsgState >= W1–7_EXIT_MSG) 
                     goto SetEndTimerAndStopPrinting;
-                }
             }  
         }
+        
         // --Update the Pointer to the message buffer--
-        // PrintMsg
-        //($0c-$0d = first), ($0e = world 1-7's), ($0f-$12 = world 8's)
         VRAM_Buffer_AddrCtrl = WorkingMsgState + 0x0C;
         goto WaitUntilNextState;
         
-        WaitUntilNextState: { // Wait for Secondary timer before displaying next message
+        // --Delay Next State by using gTimerUntilNextMsgState--
+        WaitUntilNextState: {
             {
                 gTimerUntilNextMsgState += 4; bool rCarry = (gTimerUntilNextMsgState < 4);
                 gMsgState += rCarry;
@@ -107,8 +98,27 @@ void VictoryModeSubroutines(void) {
             return;
             //Vars are cleared later by code that Ram up to $074b
         }
-        
+    }
+    
     doPlayerEndWorld:
-    
-    
+    {
+        if (WorldEndTimer > 0) return;
+        if (WorldNumber < WORLD_8) {
+            //  --Setup vars to load the next world--
+            AreaNumber = 0; LevelNumber = 0; OperMode_Task = 0;
+            WorldNumber++;
+            LoadAreaPointer();
+            OperMode = GAME_MODE;
+            return;
+        } else {
+            //  --Check if P1 or P2 is holding B to--
+            //    --End the game or switch to P2--
+            if (P1_PRESSING(B_BUTTON) || P2_PRESSING(B_BUTTON)) {
+                WorldSelectEnableFlag = 1;
+                NumberofLives = 0;
+                TerminateGame();
+            }
+            return;
+        }
+    }
 }
