@@ -1191,13 +1191,13 @@ PrintVictoryMessages:                                                           
                jmp ThankPlayer           ;and skip to next part                                                          // 
 MRetainerMsg:  cmp #$02                  ;check primary message counter                                                  // 
                bcc IncMsgCounter         ;if not at 2 yet (world 1-7 only), branch                                       // 
-ThankPlayer:   tay                       ;put primary message counter into Y                                             // 
+ThankPlayer:   tay                       ;put primary message counter into Y                                             // a=2 carry is set
                bne SecondPartMsg         ;if counter nonzero, skip this part, do not print first message                 // 
                lda CurrentPlayer         ;otherwise get player currently on the screen                                   // 
                beq EvalForMusic          ;if mario, branch                                                               // 
                iny                       ;otherwise increment Y once for luigi and                                       // 
                bne EvalForMusic          ;do an unconditional branch to the same place                                   // 
-SecondPartMsg: iny                       ;increment Y to do world 8's message                                            // 
+SecondPartMsg: iny                       ;increment Y to do world 8's message                                            // y=2 carry set
                lda WorldNumber                                                                                           // 
                cmp #World8               ;check world number                                                             // 
                beq EvalForMusic          ;if at world 8, branch to next part                                             // 
@@ -2206,7 +2206,7 @@ Palette1_MTiles:                                                                
   .db $c6, $c8, $c7, $c9 ;bullet bill cannon barrel                                                                      // 
   .db $ca, $cc, $cb, $cd ;bullet bill cannon top                                                                         // 
   .db $2a, $2a, $40, $40 ;bullet bill cannon bottom                                                                      // 
-  .db $24, $24, $24, $24 ;blank used for jumpspring                                                                      // 
+  .db $24, $24, $24, $24 ;blank used forjumpspring                                                                      // 
   .db $24, $47, $24, $47 ;half brick used for jumpspring                                                                 // 
   .db $82, $83, $84, $85 ;solid block (water level, green rock)                                                          // 
   .db $24, $47, $24, $47 ;half brick (???)                                                                               // 
